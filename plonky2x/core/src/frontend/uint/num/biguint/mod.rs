@@ -32,6 +32,25 @@ impl BigUintTarget {
     pub fn get_limb(&self, i: usize) -> U32Target {
         self.limbs[i]
     }
+
+    pub fn serialize(&self, dst: &mut Vec<u8>) -> IoResult<()> {
+        dst.write_target_vec(
+            &self
+                .limbs
+                .iter()
+                .map(|bt| bt.target)
+                .collect::<Vec<Target>>(),
+        )
+    }
+
+    pub fn deserialize(src: &mut plonky2::util::serialization::Buffer) -> IoResult<Self> {
+        let target_limbs = src.read_target_vec()?;
+        let limbs = target_limbs
+            .into_iter()
+            .map(U32Target::from_target_unsafe)
+            .collect();
+        Ok(Self { limbs })
+    }
 }
 
 // This function will convert a BytesVariable into a plonky2 BigUintTarget.
